@@ -1,12 +1,20 @@
-import type { TripInput } from '../helpers/calc'
+import type { FuelCostMode, TripInput } from '../helpers/calc'
 
 type CalculatorFormProps = {
   form: TripInput & {
     viajesDia: number
     litrosGasoilRecibidosDia: number
+    incluirCostoCombustible: boolean
+    modoConsumo: FuelCostMode
+    consumoPorcentaje: number
+    litrosConsumidosViaje: number
   }
-  onChange: (field: keyof CalculatorFormProps['form'], value: number) => void
+  onChange: (
+    field: keyof CalculatorFormProps['form'],
+    value: number | boolean | FuelCostMode
+  ) => void
   hasNegative: boolean
+  kmViajeClamped: boolean
 }
 
 const clampInput = (value: string) => {
@@ -15,7 +23,12 @@ const clampInput = (value: string) => {
   return Number.isNaN(parsed) ? 0 : parsed
 }
 
-export function CalculatorForm({ form, onChange, hasNegative }: CalculatorFormProps) {
+export function CalculatorForm({
+  form,
+  onChange,
+  hasNegative,
+  kmViajeClamped,
+}: CalculatorFormProps) {
   return (
     <section className="card">
       <header className="card__header">
@@ -44,34 +57,12 @@ export function CalculatorForm({ form, onChange, hasNegative }: CalculatorFormPr
           <input
             type="number"
             min={0}
+            max={15}
             step={0.1}
             value={form.kmViaje}
             onChange={(event) => onChange('kmViaje', clampInput(event.target.value))}
           />
-        </label>
-
-        <label className="field">
-          <span>Kilometros de traslado</span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={form.kmTraslado}
-            onChange={(event) => onChange('kmTraslado', clampInput(event.target.value))}
-          />
-          <small>Extra por traslado; no cambia el valor del viaje.</small>
-        </label>
-
-        <label className="field">
-          <span>Litros por 100 km (traslado)</span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={form.litrosPor100kmTraslado}
-            onChange={(event) => onChange('litrosPor100kmTraslado', clampInput(event.target.value))}
-          />
-          <small>Valor operativo configurable.</small>
+          {kmViajeClamped ? <small className="warning">Se aplico el limite de 15 km.</small> : null}
         </label>
 
         <label className="field">
@@ -151,6 +142,63 @@ export function CalculatorForm({ form, onChange, hasNegative }: CalculatorFormPr
           <small>Para calcular gasoil disponible.</small>
         </label>
       </div>
+
+      <div className="card__divider" />
+
+      <header className="card__header">
+        <h2>Costo de combustible (para margen real)</h2>
+        <p>Opcional: suma el costo de combustible para estimar el margen real.</p>
+      </header>
+
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={form.incluirCostoCombustible}
+          onChange={(event) => onChange('incluirCostoCombustible', event.target.checked)}
+        />
+        Incluir costo de combustible en el margen
+      </label>
+
+      {form.incluirCostoCombustible ? (
+        <div className="form-grid">
+          <label className="field">
+            <span>Modo de consumo</span>
+            <select
+              value={form.modoConsumo}
+              onChange={(event) => onChange('modoConsumo', event.target.value as FuelCostMode)}
+            >
+              <option value="porcentaje">% sobre litros reconocidos</option>
+              <option value="litros">Litros consumidos por viaje</option>
+            </select>
+          </label>
+
+          {form.modoConsumo === 'porcentaje' ? (
+            <label className="field">
+              <span>Consumo (%)</span>
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={form.consumoPorcentaje}
+                onChange={(event) => onChange('consumoPorcentaje', clampInput(event.target.value))}
+              />
+            </label>
+          ) : (
+            <label className="field">
+              <span>Litros consumidos por viaje</span>
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={form.litrosConsumidosViaje}
+                onChange={(event) =>
+                  onChange('litrosConsumidosViaje', clampInput(event.target.value))
+                }
+              />
+            </label>
+          )}
+        </div>
+      ) : null}
     </section>
   )
 }

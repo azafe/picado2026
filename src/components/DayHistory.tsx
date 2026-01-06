@@ -47,8 +47,7 @@ export function DayHistory({
               <div>
                 <strong>{entry.timestamp}</strong>
                 <span>
-                  {formatNumber(entry.m3)} m3 · {formatNumber(entry.kmViaje)} km ·{' '}
-                  {formatNumber(entry.kmTraslado)} km traslado
+                  {formatNumber(entry.m3)} m3 · {formatNumber(entry.kmViaje)} km
                 </span>
               </div>
               <div>
@@ -57,7 +56,6 @@ export function DayHistory({
               </div>
               <div>
                 <span>Extras: {formatLiters(entry.litrosExtra)}</span>
-                <span>Traslado: {formatLiters(entry.litrosTraslado)}</span>
               </div>
             </article>
           ))}
@@ -82,7 +80,7 @@ export function DayHistory({
       </div>
 
       <p className="note">
-        El balance de gasoil considera extras y traslados valorizados sin IVA.
+        El balance de gasoil considera extras valorizados sin IVA.
       </p>
     </section>
   )

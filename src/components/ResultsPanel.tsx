@@ -1,14 +1,23 @@
-import type { DayTotals, TripCalculation } from '../helpers/calc'
+import type { DayTotals, FuelCostCalculation, TripCalculation } from '../helpers/calc'
 import { formatCurrency, formatLiters, formatPercent } from '../helpers/format'
 
 type ResultsPanelProps = {
   tripCalc: TripCalculation
+  fuelCostCalc: FuelCostCalculation
+  includeFuelCost: boolean
   dayTotals: DayTotals
   usingHistory: boolean
   viajesDia: number
 }
 
-export function ResultsPanel({ tripCalc, dayTotals, usingHistory, viajesDia }: ResultsPanelProps) {
+export function ResultsPanel({
+  tripCalc,
+  fuelCostCalc,
+  includeFuelCost,
+  dayTotals,
+  usingHistory,
+  viajesDia,
+}: ResultsPanelProps) {
   return (
     <section className="card">
       <header className="card__header">
@@ -27,9 +36,6 @@ export function ResultsPanel({ tripCalc, dayTotals, usingHistory, viajesDia }: R
             <span>
               Extras: {formatLiters(tripCalc.litrosExtra)} · {formatCurrency(tripCalc.extra)}
             </span>
-            <span>
-              Traslado: {formatLiters(tripCalc.litrosTraslado)} · {formatCurrency(tripCalc.traslado)}
-            </span>
           </div>
         </article>
 
@@ -41,6 +47,24 @@ export function ResultsPanel({ tripCalc, dayTotals, usingHistory, viajesDia }: R
             <span>Pago chofer: {formatCurrency(tripCalc.pagoChofer)}</span>
           </div>
         </article>
+
+        {includeFuelCost ? (
+          <article className="result-card">
+            <h3>Margen real</h3>
+            <p className="result-amount">{formatCurrency(fuelCostCalc.netoReal)}</p>
+            <div className="result-meta">
+              <span>
+                Litros reconocidos (base+extra): {formatLiters(fuelCostCalc.litrosReconocidos)}
+              </span>
+              <span>
+                Litros consumidos estimados: {formatLiters(fuelCostCalc.litrosConsumidos)}
+              </span>
+              <span>Costo de combustible: {formatCurrency(fuelCostCalc.costoCombustible)}</span>
+              <span>Neto real: {formatCurrency(fuelCostCalc.netoReal)}</span>
+              <span>% margen real: {formatPercent(fuelCostCalc.margenReal)}</span>
+            </div>
+          </article>
+        ) : null}
 
         <article className="result-card">
           <h3>Dia (bruto)</h3>

@@ -1,18 +1,17 @@
 export const CONSTANTS = {
   factorBase: 0.55,
   kmIncluidos: 4,
+  kmMax: 15,
   litrosPorKmExtra: 4.5,
 } as const
 
 export type TripInput = {
   m3: number
   kmViaje: number
-  kmTraslado: number
   precioConIva: number
   iva: number
   porcentajeComision: number
   porcentajeChofer: number
-  litrosPor100kmTraslado: number
 }
 
 export type TripCalculation = {
@@ -20,10 +19,9 @@ export type TripCalculation = {
   precioSinIva: number
   litrosBase: number
   litrosExtra: number
-  litrosTraslado: number
+  litrosReconocidos: number
   base: number
   extra: number
-  traslado: number
   totalViaje: number
   comisionLucas: number
   pagoChofer: number
@@ -35,11 +33,9 @@ export type HistoryEntry = {
   timestamp: string
   m3: number
   kmViaje: number
-  kmTraslado: number
   totalViaje: number
   netoViaje: number
   litrosExtra: number
-  litrosTraslado: number
 }
 
 export type DayTotals = {
@@ -51,6 +47,23 @@ export type DayTotals = {
   netoPlus: number
   porcentajeGanancia: number
   porcentajeGananciaPlus: number
+}
+
+export type FuelCostMode = 'porcentaje' | 'litros'
+
+export type FuelCostInput = {
+  modo: FuelCostMode
+  consumoPorcentaje: number
+  litrosConsumidosViaje: number
+  precioConIva: number
+}
+
+export type FuelCostCalculation = {
+  litrosReconocidos: number
+  litrosConsumidos: number
+  costoCombustible: number
+  netoReal: number
+  margenReal: number
 }
 
 const clampNonNegative = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0)
@@ -65,12 +78,11 @@ export const calcPrecioSinIva = (precioConIva: number, iva: number) => {
 
 export const calcTrip = (input: TripInput): TripCalculation => {
   const m3 = clampNonNegative(input.m3)
-  const kmViaje = clampNonNegative(input.kmViaje)
-  const kmTraslado = clampNonNegative(input.kmTraslado)
+  const kmViajeRaw = clampNonNegative(input.kmViaje)
+  const kmViaje = Math.min(kmViajeRaw, CONSTANTS.kmMax)
   const precioConIva = clampNonNegative(input.precioConIva)
   const porcentajeComision = clampNonNegative(input.porcentajeComision)
   const porcentajeChofer = clampNonNegative(input.porcentajeChofer)
-  const litrosPor100kmTraslado = clampNonNegative(input.litrosPor100kmTraslado)
 
   const precioSinIva = calcPrecioSinIva(precioConIva, input.iva)
 
@@ -80,11 +92,9 @@ export const calcTrip = (input: TripInput): TripCalculation => {
   const kmExtra = Math.max(0, kmViaje - CONSTANTS.kmIncluidos)
   const litrosExtra = kmExtra * CONSTANTS.litrosPorKmExtra
   const extra = litrosExtra * precioSinIva
+  const litrosReconocidos = litrosBase + litrosExtra
 
-  const litrosTraslado = (kmTraslado / 100) * litrosPor100kmTraslado
-  const traslado = litrosTraslado * precioSinIva
-
-  const totalViaje = base + extra + traslado
+  const totalViaje = base + extra
   const comisionLucas = totalViaje * (porcentajeComision / 100)
   const pagoChofer = totalViaje * (porcentajeChofer / 100)
   const netoViaje = totalViaje - comisionLucas - pagoChofer
@@ -94,10 +104,9 @@ export const calcTrip = (input: TripInput): TripCalculation => {
     precioSinIva,
     litrosBase,
     litrosExtra,
-    litrosTraslado,
+    litrosReconocidos,
     base,
     extra,
-    traslado,
     totalViaje,
     comisionLucas,
     pagoChofer,
@@ -112,19 +121,16 @@ export const createHistoryEntry = (
   id: string
 ): HistoryEntry => {
   const m3 = clampNonNegative(input.m3)
-  const kmViaje = clampNonNegative(input.kmViaje)
-  const kmTraslado = clampNonNegative(input.kmTraslado)
+  const kmViaje = Math.min(clampNonNegative(input.kmViaje), CONSTANTS.kmMax)
 
   return {
     id,
     timestamp,
     m3,
     kmViaje,
-    kmTraslado,
     totalViaje: calc.totalViaje,
     netoViaje: calc.netoViaje,
     litrosExtra: calc.litrosExtra,
-    litrosTraslado: calc.litrosTraslado,
   }
 }
 
@@ -135,10 +141,7 @@ export const calcDayTotalsFromHistory = (
 ): DayTotals => {
   const brutoDia = history.reduce((acc, entry) => acc + entry.totalViaje, 0)
   const netoDia = history.reduce((acc, entry) => acc + entry.netoViaje, 0)
-  const litrosComprometidos = history.reduce(
-    (acc, entry) => acc + entry.litrosExtra + entry.litrosTraslado,
-    0
-  )
+  const litrosComprometidos = history.reduce((acc, entry) => acc + entry.litrosExtra, 0)
 
   return buildDayTotals(
     brutoDia,
@@ -158,7 +161,7 @@ export const calcDayTotalsFromMultiplier = (
   const safeViajes = clampNonNegative(viajesDia)
   const brutoDia = tripCalc.totalViaje * safeViajes
   const netoDia = tripCalc.netoViaje * safeViajes
-  const litrosComprometidos = (tripCalc.litrosExtra + tripCalc.litrosTraslado) * safeViajes
+  const litrosComprometidos = tripCalc.litrosExtra * safeViajes
 
   return buildDayTotals(
     brutoDia,
@@ -193,5 +196,31 @@ const buildDayTotals = (
     netoPlus,
     porcentajeGanancia,
     porcentajeGananciaPlus,
+  }
+}
+
+export const calcFuelCost = (
+  tripCalc: TripCalculation,
+  input: FuelCostInput
+): FuelCostCalculation => {
+  const litrosReconocidos = tripCalc.litrosReconocidos
+  const consumoPorcentaje = clampNonNegative(input.consumoPorcentaje)
+  const litrosConsumidosViaje = clampNonNegative(input.litrosConsumidosViaje)
+  const precioConIva = clampNonNegative(input.precioConIva)
+
+  const litrosConsumidos =
+    input.modo === 'porcentaje'
+      ? litrosReconocidos * (consumoPorcentaje / 100)
+      : litrosConsumidosViaje
+  const costoCombustible = litrosConsumidos * precioConIva
+  const netoReal = tripCalc.netoViaje - costoCombustible
+  const margenReal = tripCalc.totalViaje > 0 ? netoReal / tripCalc.totalViaje : 0
+
+  return {
+    litrosReconocidos,
+    litrosConsumidos,
+    costoCombustible,
+    netoReal,
+    margenReal,
   }
 }
