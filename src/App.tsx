@@ -1,27 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import './App.css'
 import { CalculatorForm } from './components/CalculatorForm'
 import { ConstantsCard } from './components/ConstantsCard'
-import { DayHistory } from './components/DayHistory'
 import { ResultsPanel } from './components/ResultsPanel'
 import {
   calcFuelCost,
-  calcDayTotalsFromHistory,
-  calcDayTotalsFromMultiplier,
   calcTrip,
-  createHistoryEntry,
   CONSTANTS,
   type FuelCostMode,
-  type HistoryEntry,
   type TripInput,
 } from './helpers/calc'
 import { formatLiters, formatNumber } from './helpers/format'
 
-const STORAGE_KEY = 'picado2026_history'
-
 const defaultForm: TripInput & {
-  viajesDia: number
-  litrosGasoilRecibidosDia: number
   incluirCostoCombustible: boolean
   modoConsumo: FuelCostMode
   consumoPorcentaje: number
@@ -30,44 +21,15 @@ const defaultForm: TripInput & {
   m3: 45,
   kmViaje: 4,
   precioConIva: 1415,
-  iva: 21,
-  porcentajeComision: 4,
-  porcentajeChofer: 0,
-  viajesDia: 1,
-  litrosGasoilRecibidosDia: 0,
   incluirCostoCombustible: false,
   modoConsumo: 'porcentaje',
   consumoPorcentaje: 0,
   litrosConsumidosViaje: 0,
 }
 
-const readHistory = (): HistoryEntry[] => {
-  if (typeof window === 'undefined') return []
-  const raw = window.localStorage.getItem(STORAGE_KEY)
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw) as HistoryEntry[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-const createId = () => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID()
-  }
-  return `trip-${Date.now()}-${Math.round(Math.random() * 1000)}`
-}
-
 function App() {
   const [form, setForm] = useState(defaultForm)
-  const [history, setHistory] = useState<HistoryEntry[]>(readHistory)
   const [kmViajeClamped, setKmViajeClamped] = useState(false)
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
-  }, [history])
 
   const tripCalc = useMemo(
     () =>
@@ -75,9 +37,6 @@ function App() {
         m3: form.m3,
         kmViaje: form.kmViaje,
         precioConIva: form.precioConIva,
-        iva: form.iva,
-        porcentajeComision: form.porcentajeComision,
-        porcentajeChofer: form.porcentajeChofer,
       }),
     [form]
   )
@@ -99,29 +58,10 @@ function App() {
     ]
   )
 
-  const usingHistory = history.length > 0
-  const dayTotals = useMemo(
-    () =>
-      usingHistory
-        ? calcDayTotalsFromHistory(history, form.litrosGasoilRecibidosDia, form.precioConIva)
-        : calcDayTotalsFromMultiplier(
-            tripCalc,
-            form.viajesDia,
-            form.litrosGasoilRecibidosDia,
-            form.precioConIva
-          ),
-    [history, form.litrosGasoilRecibidosDia, form.precioConIva, form.viajesDia, tripCalc, usingHistory]
-  )
-
   const hasNegative = [
     form.m3,
     form.kmViaje,
     form.precioConIva,
-    form.iva,
-    form.porcentajeComision,
-    form.porcentajeChofer,
-    form.viajesDia,
-    form.litrosGasoilRecibidosDia,
     form.consumoPorcentaje,
     form.litrosConsumidosViaje,
   ].some((value) => value < 0)
@@ -154,27 +94,6 @@ function App() {
     }))
   }
 
-  const handleSaveTrip = () => {
-    const entry = createHistoryEntry(
-      {
-        m3: form.m3,
-        kmViaje: form.kmViaje,
-        precioConIva: form.precioConIva,
-        iva: form.iva,
-        porcentajeComision: form.porcentajeComision,
-        porcentajeChofer: form.porcentajeChofer,
-      },
-      tripCalc,
-      new Date().toLocaleString('es-AR'),
-      createId()
-    )
-    setHistory((prev) => [entry, ...prev])
-  }
-
-  const handleClearHistory = () => {
-    setHistory([])
-  }
-
   const handleExample = (kmViaje: number) => {
     setKmViajeClamped(false)
     setForm((prev) => ({
@@ -182,7 +101,6 @@ function App() {
       m3: 45,
       kmViaje,
       precioConIva: 1415,
-      iva: 21,
     }))
   }
 
@@ -210,29 +128,13 @@ function App() {
                 m3, valuada con gasoil CON IVA.
               </p>
               <p>
-                <strong>Mas de 4 km (hasta 15):</strong> se paga la BASE (con IVA) mas un EXTRA de
-                4,5 litros por cada km excedente, valuado con gasoil SIN IVA.
+                <strong>Mas de 4 km:</strong> se paga la BASE (con IVA) mas un EXTRA de 4,5 litros
+                por cada km excedente, valuado con gasoil SIN IVA.
               </p>
             </div>
-            <div className="chips">
-              <span className="chip">0,55 L por m3</span>
-              <span className="chip">4 km incluidos</span>
-              <span className="chip">4,5 L por km extra</span>
-              <span className="chip">Base con IVA</span>
-              <span className="chip">Extra sin IVA</span>
-            </div>
-            <details className="detail">
-              <summary>Ver detalle del calculo</summary>
-              <p>
-                La base se obtiene multiplicando los m3 transportados por 0,55 litros y valuando
-                esos litros al precio de gasoil con IVA.
-              </p>
-              <p>
-                Si el viaje supera 4 km, cada km excedente agrega 4,5 litros adicionales. Esos
-                litros extra se valorizan con el precio de gasoil sin IVA.
-              </p>
-            </details>
           </section>
+
+          <ConstantsCard />
 
           <section className="card">
             <header className="card__header">
@@ -264,7 +166,6 @@ function App() {
             hasNegative={hasNegative}
             kmViajeClamped={kmViajeClamped}
           />
-          <ConstantsCard />
           <section className="card">
             <header className="card__header">
               <h2>Aclaracion sobre traslados</h2>
@@ -287,17 +188,6 @@ function App() {
             tripCalc={tripCalc}
             fuelCostCalc={fuelCostCalc}
             includeFuelCost={form.incluirCostoCombustible}
-            dayTotals={dayTotals}
-            usingHistory={usingHistory}
-            viajesDia={form.viajesDia}
-          />
-          <DayHistory
-            history={history}
-            onSaveTrip={handleSaveTrip}
-            onClear={handleClearHistory}
-            dayTotals={dayTotals}
-            viajesDia={form.viajesDia}
-            litrosRecibidos={form.litrosGasoilRecibidosDia}
           />
         </div>
       </main>

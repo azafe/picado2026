@@ -139,6 +139,15 @@
   box-shadow: 0 0 0 3px rgba(44, 74, 82, 0.2);
 }
 
+.field__readonly {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(15, 27, 31, 0.2);
+  background: #f3f0ea;
+  color: #2c383d;
+  font-weight: 600;
+}
+
 .alert {
   background: #fff2e5;
   border: 1px solid #f4c796;
@@ -248,43 +257,6 @@
   margin: 0 0 6px;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: #f5f2ed;
-  border: 1px solid rgba(15, 27, 31, 0.1);
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #2c383d;
-}
-
-.detail {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(15, 27, 31, 0.08);
-  color: #4c5a60;
-}
-
-.detail summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: #2c383d;
-  margin-bottom: 8px;
-}
-
-.detail p {
-  margin: 0 0 10px;
-}
 
 .toggle {
   display: flex;

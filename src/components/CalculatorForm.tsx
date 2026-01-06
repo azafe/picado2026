@@ -1,9 +1,7 @@
-import type { FuelCostMode, TripInput } from '../helpers/calc'
+import { CONSTANTS, type FuelCostMode, type TripInput } from '../helpers/calc'
 
 type CalculatorFormProps = {
   form: TripInput & {
-    viajesDia: number
-    litrosGasoilRecibidosDia: number
     incluirCostoCombustible: boolean
     modoConsumo: FuelCostMode
     consumoPorcentaje: number
@@ -67,32 +65,19 @@ export function CalculatorForm({
 
         <label className="field">
           <span>Comision Lucas (%)</span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={form.porcentajeComision}
-            onChange={(event) => onChange('porcentajeComision', clampInput(event.target.value))}
-          />
+          <div className="field__readonly">{CONSTANTS.comisionLucasPorcentaje}% fijo</div>
         </label>
 
         <label className="field">
           <span>Porcentaje chofer (%)</span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={form.porcentajeChofer}
-            onChange={(event) => onChange('porcentajeChofer', clampInput(event.target.value))}
-          />
+          <div className="field__readonly">{CONSTANTS.porcentajeChofer}% fijo</div>
         </label>
       </div>
-
       <div className="card__divider" />
 
       <header className="card__header">
-        <h2>Datos del dia (gasoil recibido)</h2>
-        <p>Se usan para las metricas diarias y el balance de gasoil.</p>
+        <h2>Precio del gasoil</h2>
+        <p>Se usa para valuar base y extras del viaje.</p>
       </header>
 
       <div className="form-grid">
@@ -105,41 +90,6 @@ export function CalculatorForm({
             value={form.precioConIva}
             onChange={(event) => onChange('precioConIva', clampInput(event.target.value))}
           />
-        </label>
-
-        <label className="field">
-          <span>IVA (%)</span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={form.iva}
-            onChange={(event) => onChange('iva', clampInput(event.target.value))}
-          />
-        </label>
-
-        <label className="field">
-          <span>Viajes del dia</span>
-          <input
-            type="number"
-            min={0}
-            step={1}
-            value={form.viajesDia}
-            onChange={(event) => onChange('viajesDia', clampInput(event.target.value))}
-          />
-          <small>Se usa si no hay historial cargado.</small>
-        </label>
-
-        <label className="field">
-          <span>Litros recibidos en el dia</span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={form.litrosGasoilRecibidosDia}
-            onChange={(event) => onChange('litrosGasoilRecibidosDia', clampInput(event.target.value))}
-          />
-          <small>Para calcular gasoil disponible.</small>
         </label>
       </div>
 

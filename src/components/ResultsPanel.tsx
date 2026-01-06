@@ -1,28 +1,22 @@
-import type { DayTotals, FuelCostCalculation, TripCalculation } from '../helpers/calc'
+import type { FuelCostCalculation, TripCalculation } from '../helpers/calc'
 import { formatCurrency, formatLiters, formatPercent } from '../helpers/format'
 
 type ResultsPanelProps = {
   tripCalc: TripCalculation
   fuelCostCalc: FuelCostCalculation
   includeFuelCost: boolean
-  dayTotals: DayTotals
-  usingHistory: boolean
-  viajesDia: number
 }
 
 export function ResultsPanel({
   tripCalc,
   fuelCostCalc,
   includeFuelCost,
-  dayTotals,
-  usingHistory,
-  viajesDia,
 }: ResultsPanelProps) {
   return (
     <section className="card">
       <header className="card__header">
         <h2>Resultados</h2>
-        <p>Resumen del viaje actual y del dia.</p>
+        <p>Resumen del viaje actual.</p>
       </header>
 
       <div className="result-grid">
@@ -66,31 +60,6 @@ export function ResultsPanel({
           </article>
         ) : null}
 
-        <article className="result-card">
-          <h3>Dia (bruto)</h3>
-          <p className="result-amount">{formatCurrency(dayTotals.brutoDia)}</p>
-          <div className="result-meta">
-            <span>
-              {usingHistory
-                ? 'Sumatoria de viajes guardados.'
-                : `Multiplicado por ${viajesDia} viaje(s).`}
-            </span>
-          </div>
-        </article>
-
-        <article className="result-card">
-          <h3>Dia (neto)</h3>
-          <p className="result-amount">{formatCurrency(dayTotals.netoDia)}</p>
-          <div className="result-meta">
-            <span>Ganancia sobre bruto: {formatPercent(dayTotals.porcentajeGanancia)}</span>
-            <span>
-              Neto + gasoil disponible: {formatCurrency(dayTotals.netoPlus)}
-            </span>
-            <span>
-              % neto + gasoil disponible: {formatPercent(dayTotals.porcentajeGananciaPlus)}
-            </span>
-          </div>
-        </article>
       </div>
     </section>
   )

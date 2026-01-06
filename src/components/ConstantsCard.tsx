@@ -21,6 +21,18 @@ export function ConstantsCard() {
           <span>Litros por km extra</span>
           <strong>{CONSTANTS.litrosPorKmExtra.toFixed(2)} L</strong>
         </div>
+        <div>
+          <span>IVA gasoil</span>
+          <strong>{CONSTANTS.ivaGasoil}%</strong>
+        </div>
+        <div>
+          <span>Comision Lucas</span>
+          <strong>{CONSTANTS.comisionLucasPorcentaje}%</strong>
+        </div>
+        <div>
+          <span>Porcentaje chofer</span>
+          <strong>{CONSTANTS.porcentajeChofer}%</strong>
+        </div>
       </div>
     </section>
   )
