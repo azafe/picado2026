@@ -123,7 +123,7 @@ function App() {
     <div className="app">
       <header className="hero">
         <div className="hero__badge">Picado 2025/2026</div>
-        <h1>Transporte Zafe - Calculadora de Viajes</h1>
+        <h1>Calculadora de viajes</h1>
         <p>
           Calculadora rapida para estimar valores brutos, netos y el balance diario de gasoil con
           valuacion mixta.
@@ -132,6 +132,23 @@ function App() {
 
       <main className="layout">
         <div className="column">
+          <section className="card">
+            <header className="card__header">
+              <h2>Como se calcula el viaje</h2>
+              <p>Resumen simple para entender el valor del viaje.</p>
+            </header>
+            <ul>
+              <li>Base: m3 transportados por el factor base (se paga con IVA).</li>
+              <li>
+                Extra por km: si el viaje supera los km incluidos, se suman litros por km extra
+                (sin IVA).
+              </li>
+              <li>
+                Traslado: los km de traslado no afectan el valor del viaje; es un extra que se paga
+                solo cuando se termina un lote (sin IVA).
+              </li>
+            </ul>
+          </section>
           <CalculatorForm form={form} onChange={handleChange} hasNegative={hasNegative} />
           <ConstantsCard />
           <section className="card notice">

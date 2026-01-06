@@ -29,7 +29,7 @@ export function CalculatorForm({ form, onChange, hasNegative }: CalculatorFormPr
 
       <div className="form-grid">
         <label className="field">
-          <span>M3 transportados</span>
+          <span>m3 transportados por capacidad de batea (m3)</span>
           <input
             type="number"
             min={0}
@@ -59,7 +59,7 @@ export function CalculatorForm({ form, onChange, hasNegative }: CalculatorFormPr
             value={form.kmTraslado}
             onChange={(event) => onChange('kmTraslado', clampInput(event.target.value))}
           />
-          <small>Se valua sin IVA.</small>
+          <small>Extra por traslado; no cambia el valor del viaje.</small>
         </label>
 
         <label className="field">
