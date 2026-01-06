@@ -115,6 +115,10 @@ function App() {
               <li>Valuacion: base con IVA, extras sin IVA.</li>
               <li>Traslados: se reconocen aparte con 32 L/100 km recorridos.</li>
               <li>Viajes maximos: 15 km.</li>
+              <li>
+                El costo real del gasoil consumido no esta incluido: se descuenta cuando se conozca
+                el consumo efectivo.
+              </li>
             </ul>
           </section>
         </div>
