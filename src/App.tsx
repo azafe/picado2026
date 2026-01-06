@@ -15,6 +15,7 @@ import {
   type HistoryEntry,
   type TripInput,
 } from './helpers/calc'
+import { formatLiters, formatNumber } from './helpers/format'
 
 const STORAGE_KEY = 'picado2026_history'
 
@@ -200,29 +201,37 @@ function App() {
         <div className="column">
           <section className="card">
             <header className="card__header">
-              <h2>Como se calcula el viaje</h2>
-              <p>Reglas claras para entender el valor del viaje.</p>
+              <h2>Regla del viaje</h2>
+              <p>Resumen claro para entender el valor del viaje.</p>
             </header>
             <div className="rules">
-              <div>
-                <strong>Si el viaje es de 0 a 4 km:</strong> se paga solo la BASE, valuada con
-                gasoil CON IVA.
-                <pre className="formula">{`BASE: litros_base = 0.55 * m3
-$base = litros_base * precio_gasoil_con_iva`}</pre>
-              </div>
-              <div>
-                <strong>Si el viaje supera 4 km (hasta 15):</strong> se paga BASE (con IVA) + EXTRA
-                por km excedente, valuado con gasoil SIN IVA.
-                <pre className="formula">{`EXTRA: km_extra = max(0, km_viaje - 4)
-litros_extra = km_extra * 4.5
-precio_sin_iva = precio_con_iva / (1 + iva/100)
-$extra = litros_extra * precio_sin_iva`}</pre>
-              </div>
-              <div>
-                <strong>TOTAL VIAJE:</strong>
-                <pre className="formula">{`total_viaje = $base + $extra`}</pre>
-              </div>
+              <p>
+                <strong>Hasta 4 km:</strong> se paga solo la BASE, calculada como 0,55 litros por
+                m3, valuada con gasoil CON IVA.
+              </p>
+              <p>
+                <strong>Mas de 4 km (hasta 15):</strong> se paga la BASE (con IVA) mas un EXTRA de
+                4,5 litros por cada km excedente, valuado con gasoil SIN IVA.
+              </p>
             </div>
+            <div className="chips">
+              <span className="chip">0,55 L por m3</span>
+              <span className="chip">4 km incluidos</span>
+              <span className="chip">4,5 L por km extra</span>
+              <span className="chip">Base con IVA</span>
+              <span className="chip">Extra sin IVA</span>
+            </div>
+            <details className="detail">
+              <summary>Ver detalle del calculo</summary>
+              <p>
+                La base se obtiene multiplicando los m3 transportados por 0,55 litros y valuando
+                esos litros al precio de gasoil con IVA.
+              </p>
+              <p>
+                Si el viaje supera 4 km, cada km excedente agrega 4,5 litros adicionales. Esos
+                litros extra se valorizan con el precio de gasoil sin IVA.
+              </p>
+            </details>
           </section>
 
           <section className="card">
@@ -239,8 +248,14 @@ $extra = litros_extra * precio_sin_iva`}</pre>
               </button>
             </div>
             <div className="example-results">
-              <p>En 3 km: extra = 0.</p>
-              <p>En 12 km: extra por 8 km.</p>
+              {tripCalc.kmExtra === 0 ? (
+                <p>En este caso no hay km extra.</p>
+              ) : (
+                <p>
+                  En este caso hay {formatNumber(tripCalc.kmExtra)} km extra que generan{' '}
+                  {formatLiters(tripCalc.litrosExtra)} adicionales.
+                </p>
+              )}
             </div>
           </section>
           <CalculatorForm
