@@ -1,114 +1,19 @@
-import { useMemo, useState } from 'react'
 import './App.css'
-import { CalculatorForm } from './components/CalculatorForm'
 import { ConstantsCard } from './components/ConstantsCard'
-import { ResultsPanel } from './components/ResultsPanel'
-import { calcFuelCost, calcTrip, type FuelCostMode, type TripInput } from './helpers/calc'
-import { formatLiters, formatNumber } from './helpers/format'
-
-const defaultForm: TripInput & {
-  incluirCostoCombustible: boolean
-  modoConsumo: FuelCostMode
-  consumoPorcentaje: number
-  litrosConsumidosViaje: number
-} = {
-  m3: 45,
-  kmViaje: 4,
-  precioConIva: 1415,
-  incluirCostoCombustible: false,
-  modoConsumo: 'porcentaje',
-  consumoPorcentaje: 0,
-  litrosConsumidosViaje: 0,
-}
+import { CONSTANTS, getExampleCalculations } from './helpers/calc'
+import { formatCurrency, formatNumber } from './helpers/format'
 
 function App() {
-  const [form, setForm] = useState(defaultForm)
-  const [selectedExample, setSelectedExample] = useState<number | null>(null)
-
-  const tripCalc = useMemo(
-    () =>
-      calcTrip({
-        m3: form.m3,
-        kmViaje: form.kmViaje,
-        precioConIva: form.precioConIva,
-      }),
-    [form]
-  )
-
-  const fuelCostCalc = useMemo(
-    () =>
-      calcFuelCost(tripCalc, {
-        modo: form.modoConsumo,
-        consumoPorcentaje: form.consumoPorcentaje,
-        litrosConsumidosViaje: form.litrosConsumidosViaje,
-        precioConIva: form.precioConIva,
-      }),
-    [
-      form.consumoPorcentaje,
-      form.litrosConsumidosViaje,
-      form.modoConsumo,
-      form.precioConIva,
-      tripCalc,
-    ]
-  )
-
-  const hasNegative = [
-    form.m3,
-    form.kmViaje,
-    form.precioConIva,
-    form.consumoPorcentaje,
-    form.litrosConsumidosViaje,
-  ].some((value) => value < 0)
-
-  const handleChange = (
-    field: keyof typeof form,
-    value: number | boolean | FuelCostMode
-  ) => {
-    if (field === 'kmViaje' && typeof value === 'number') {
-      const clamped = Math.max(0, value)
-      setSelectedExample(null)
-      setForm((prev) => ({
-        ...prev,
-        [field]: clamped,
-      }))
-      return
-    }
-
-    if (typeof value === 'number') {
-      if (field === 'm3' || field === 'precioConIva') {
-        setSelectedExample(null)
-      }
-      setForm((prev) => ({
-        ...prev,
-        [field]: Math.max(0, value),
-      }))
-      return
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
-
-  const handleExample = (kmViaje: number) => {
-    setSelectedExample(kmViaje)
-    setForm((prev) => ({
-      ...prev,
-      m3: 45,
-      kmViaje,
-      precioConIva: 1415,
-    }))
-  }
+  const examples = getExampleCalculations()
 
   return (
     <div className="app">
       <header className="hero">
         <div className="hero__badge">Picado 2025/2026</div>
-        <h1>Calculadora de viajes</h1>
+        <h1>Como se paga el viaje</h1>
         <p>
-          Calculadora rapida para estimar valores brutos, netos y el balance diario de gasoil con
-          valuacion mixta.
+          Guia simple para entender el valor del viaje con dos ejemplos reales, sin calculos
+          editables.
         </p>
       </header>
 
@@ -121,79 +26,105 @@ function App() {
             </header>
             <div className="rules">
               <p>
-                <strong>Hasta 4 km:</strong> se paga solo la BASE, calculada como 0,55 litros por
-                m3, valuada con gasoil CON IVA.
+                <strong>Hasta 4 km:</strong> se paga solo la BASE (0,55 L por m3), valuada con
+                gasoil CON IVA.
               </p>
               <p>
-                <strong>Mas de 4 km:</strong> se paga la BASE (con IVA) mas un EXTRA de 4,5 litros
-                por cada km excedente, valuado con gasoil SIN IVA.
+                <strong>Mas de 4 km (hasta 15):</strong> BASE (con IVA) + EXTRA por km excedente
+                (4,5 L/km), valuado con gasoil SIN IVA.
+              </p>
+              <p>
+                <strong>Traslados:</strong> los traslados entre campos no forman parte del valor
+                del viaje. Se reconocen aparte unicamente cuando ocurre un traslado (acuerdo
+                operativo).
               </p>
             </div>
           </section>
 
           <ConstantsCard />
 
-          <section className="card">
-            <header className="card__header">
-              <h2>Ejemplos rapidos</h2>
-              <p>Dos escenarios listos para cargar en el formulario.</p>
-            </header>
-            <div className="button-row">
-              <button
-                type="button"
-                className={`button ${selectedExample === 3 ? 'button--active' : ''}`}
-                onClick={() => handleExample(3)}
-              >
-                Ejemplo 3 km
-              </button>
-              <button
-                type="button"
-                className={`button button--ghost ${selectedExample === 12 ? 'button--active' : ''}`}
-                onClick={() => handleExample(12)}
-              >
-                Ejemplo 12 km
-              </button>
-            </div>
-            <div className="example-results">
-              {tripCalc.kmExtra === 0 ? (
-                <p>En este caso no hay km extra.</p>
-              ) : (
-                <p>
-                  En este caso hay {formatNumber(tripCalc.kmExtra)} km extra que generan{' '}
-                  {formatLiters(tripCalc.litrosExtra)} adicionales.
-                </p>
-              )}
-            </div>
-          </section>
-          <CalculatorForm
-            form={form}
-            onChange={handleChange}
-            hasNegative={hasNegative}
-          />
-          <section className="card">
-            <header className="card__header">
-              <h2>Aclaracion sobre traslados</h2>
-              <p>
-                Los traslados entre campos/provincias NO forman parte del valor del viaje. Se
-                reconocen/pagan aparte unicamente cuando ocurre un traslado (acuerdo operativo). La
-                empresa pagara 32 litros de gasoil por cada 100 km de traslados recorridos.
-              </p>
-            </header>
-          </section>
+          {examples.map((example) => (
+            <section key={example.title} className="card example-card">
+              <header className="card__header">
+                <h2>{example.title}</h2>
+                <p>Ejemplo real con datos fijos.</p>
+              </header>
+
+              <div className="example-grid">
+                <article className="example-block">
+                  <h3>Datos</h3>
+                  <ul>
+                    <li>m3: {example.m3}</li>
+                    <li>km: {example.kmViaje}</li>
+                    <li>gasoil con IVA: {formatCurrency(example.precioConIva)}</li>
+                  </ul>
+                </article>
+
+                <article className="example-block">
+                  <h3>Calculo</h3>
+                  <ul>
+                    <li>
+                      litros_base = {CONSTANTS.factorBase} * {example.m3} ={' '}
+                      {formatNumber(example.litrosBase)}
+                    </li>
+                    <li>
+                      $base = {formatNumber(example.litrosBase)} *{' '}
+                      {formatCurrency(example.precioConIva)} = {formatCurrency(example.base)}
+                    </li>
+                    <li>
+                      km_extra ={' '}
+                      {example.kmExtra > 0
+                        ? `${example.kmViaje} - ${CONSTANTS.kmIncluidos} = ${formatNumber(
+                            example.kmExtra
+                          )}`
+                        : '0'}
+                    </li>
+                    <li>
+                      litros_extra ={' '}
+                      {example.kmExtra > 0
+                        ? `${formatNumber(example.kmExtra)} * ${
+                            CONSTANTS.litrosPorKmExtra
+                          } = ${formatNumber(example.litrosExtra)}`
+                        : '0'}
+                    </li>
+                    <li>
+                      precio_sin_iva = {formatCurrency(example.precioSinIva)}
+                    </li>
+                    <li>$extra = {formatCurrency(example.extra)}</li>
+                  </ul>
+                </article>
+
+                <article className="example-block example-block--result">
+                  <h3>Resultado final</h3>
+                  <div className="result-big">
+                    <span>Total del viaje (bruto)</span>
+                    <strong>{formatCurrency(example.totalViaje)}</strong>
+                  </div>
+                  <div className="result-split">
+                    <span>{CONSTANTS.porcentajeChofer}% Chofer</span>
+                    <strong>{formatCurrency(example.pagoChofer)}</strong>
+                  </div>
+                  <div className="result-split">
+                    <span>{CONSTANTS.comisionLucasPorcentaje}% Lucas</span>
+                    <strong>{formatCurrency(example.comisionLucas)}</strong>
+                  </div>
+                  <div className="result-neto">
+                    <span>Neto Transporte Zafe</span>
+                    <strong>{formatCurrency(example.netoViaje)}</strong>
+                  </div>
+                </article>
+              </div>
+            </section>
+          ))}
+
           <section className="card notice">
             <h2>Aclaraciones</h2>
             <ul>
               <li>Valuacion: base con IVA, extras sin IVA.</li>
+              <li>Traslados: se reconocen aparte con 32 L/100 km recorridos.</li>
+              <li>Viajes maximos: 15 km.</li>
             </ul>
           </section>
-        </div>
-
-        <div className="column">
-          <ResultsPanel
-            tripCalc={tripCalc}
-            fuelCostCalc={fuelCostCalc}
-            includeFuelCost={form.incluirCostoCombustible}
-          />
         </div>
       </main>
     </div>

@@ -262,6 +262,66 @@
   margin: 0 0 6px;
 }
 
+.example-card .card__header {
+  margin-bottom: 16px;
+}
+
+.example-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.example-block {
+  background: #f7f6f2;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(15, 27, 31, 0.08);
+}
+
+.example-block h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.example-block ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #4c5a60;
+}
+
+.example-block--result {
+  background: #ffffff;
+  border: 1px solid rgba(15, 27, 31, 0.12);
+}
+
+.result-big {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.result-big strong {
+  font-size: 1.4rem;
+}
+
+.result-split,
+.result-neto {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+  color: #2c383d;
+  margin-top: 8px;
+}
+
+.result-neto {
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 27, 31, 0.1);
+  font-size: 1.05rem;
+}
+
 
 .toggle {
   display: flex;

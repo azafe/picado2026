@@ -2,6 +2,7 @@ export const CONSTANTS = {
   factorBase: 0.55,
   kmIncluidos: 4,
   litrosPorKmExtra: 4.5,
+  kmMaximo: 15,
   ivaGasoil: 21,
   comisionLucasPorcentaje: 4,
   porcentajeChofer: 15,
@@ -65,6 +66,23 @@ export type FuelCostCalculation = {
   margenReal: number
 }
 
+export type ExampleCalculation = {
+  title: string
+  m3: number
+  kmViaje: number
+  precioConIva: number
+  litrosBase: number
+  base: number
+  kmExtra: number
+  litrosExtra: number
+  precioSinIva: number
+  extra: number
+  totalViaje: number
+  pagoChofer: number
+  comisionLucas: number
+  netoViaje: number
+}
+
 const clampNonNegative = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0)
 
 export const calcPrecioSinIva = (precioConIva: number, iva: number) => {
@@ -110,6 +128,43 @@ export const calcTrip = (input: TripInput): TripCalculation => {
     pagoChofer,
     netoViaje,
   }
+}
+
+const EXAMPLE_BASE = {
+  m3: 45,
+  precioConIva: 1415,
+} as const
+
+export const getExampleCalculations = (): ExampleCalculation[] => {
+  const examples = [
+    { title: 'Ejemplo 1 — Viaje de 3 km (<= 4 km)', kmViaje: 3 },
+    { title: 'Ejemplo 2 — Viaje de 12 km (> 4 km)', kmViaje: 12 },
+  ] as const
+
+  return examples.map((example) => {
+    const calc = calcTrip({
+      m3: EXAMPLE_BASE.m3,
+      kmViaje: example.kmViaje,
+      precioConIva: EXAMPLE_BASE.precioConIva,
+    })
+
+    return {
+      title: example.title,
+      m3: EXAMPLE_BASE.m3,
+      kmViaje: example.kmViaje,
+      precioConIva: EXAMPLE_BASE.precioConIva,
+      litrosBase: calc.litrosBase,
+      base: calc.base,
+      kmExtra: calc.kmExtra,
+      litrosExtra: calc.litrosExtra,
+      precioSinIva: calc.precioSinIva,
+      extra: calc.extra,
+      totalViaje: calc.totalViaje,
+      pagoChofer: calc.pagoChofer,
+      comisionLucas: calc.comisionLucas,
+      netoViaje: calc.netoViaje,
+    }
+  })
 }
 
 export const createHistoryEntry = (

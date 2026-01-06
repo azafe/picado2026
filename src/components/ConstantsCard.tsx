@@ -18,6 +18,10 @@ export function ConstantsCard() {
           <strong>{CONSTANTS.kmIncluidos} km</strong>
         </div>
         <div>
+          <span>Viaje maximo</span>
+          <strong>{CONSTANTS.kmMaximo} km</strong>
+        </div>
+        <div>
           <span>Litros por km extra</span>
           <strong>{CONSTANTS.litrosPorKmExtra.toFixed(2)} L</strong>
         </div>
