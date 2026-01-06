@@ -1,4 +1,4 @@
-import type { FuelCostCalculation, TripCalculation } from '../helpers/calc'
+import { CONSTANTS, type FuelCostCalculation, type TripCalculation } from '../helpers/calc'
 import { formatCurrency, formatLiters, formatPercent } from '../helpers/format'
 
 type ResultsPanelProps = {
@@ -12,6 +12,12 @@ export function ResultsPanel({
   fuelCostCalc,
   includeFuelCost,
 }: ResultsPanelProps) {
+  const totalViaje = tripCalc.totalViaje
+  const costoCombustible = includeFuelCost ? fuelCostCalc.costoCombustible : 0
+  const beneficio = includeFuelCost ? fuelCostCalc.netoReal : tripCalc.netoViaje
+  const porcentajeGasoil = totalViaje > 0 ? costoCombustible / totalViaje : 0
+  const porcentajeBeneficio = totalViaje > 0 ? beneficio / totalViaje : 0
+
   return (
     <section className="card">
       <header className="card__header">
@@ -21,8 +27,8 @@ export function ResultsPanel({
 
       <div className="result-grid">
         <article className="result-card">
-          <h3>Viaje (bruto)</h3>
-          <p className="result-amount">{formatCurrency(tripCalc.totalViaje)}</p>
+          <h3>Total del viaje</h3>
+          <p className="result-amount">{formatCurrency(totalViaje)}</p>
           <div className="result-meta">
             <span>
               Base: {formatLiters(tripCalc.litrosBase)} · {formatCurrency(tripCalc.base)}
@@ -34,11 +40,21 @@ export function ResultsPanel({
         </article>
 
         <article className="result-card">
-          <h3>Viaje (neto)</h3>
-          <p className="result-amount">{formatCurrency(tripCalc.netoViaje)}</p>
+          <h3>Desglose por porcentajes</h3>
+          <p className="result-amount">{formatCurrency(beneficio)}</p>
           <div className="result-meta">
-            <span>Comision Lucas: {formatCurrency(tripCalc.comisionLucas)}</span>
-            <span>Pago chofer: {formatCurrency(tripCalc.pagoChofer)}</span>
+            <span>
+              {CONSTANTS.porcentajeChofer}% chofer: {formatCurrency(tripCalc.pagoChofer)}
+            </span>
+            <span>
+              {CONSTANTS.comisionLucasPorcentaje}% Lucas: {formatCurrency(tripCalc.comisionLucas)}
+            </span>
+            <span>
+              {formatPercent(porcentajeGasoil)} gasoil: {formatCurrency(costoCombustible)}
+            </span>
+            <span>
+              {formatPercent(porcentajeBeneficio)} de beneficio: {formatCurrency(beneficio)}
+            </span>
           </div>
         </article>
 

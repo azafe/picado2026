@@ -1,7 +1,6 @@
 export const CONSTANTS = {
   factorBase: 0.55,
   kmIncluidos: 4,
-  kmMax: 15,
   litrosPorKmExtra: 4.5,
   ivaGasoil: 21,
   comisionLucasPorcentaje: 4,
@@ -78,8 +77,7 @@ export const calcPrecioSinIva = (precioConIva: number, iva: number) => {
 
 export const calcTrip = (input: TripInput): TripCalculation => {
   const m3 = clampNonNegative(input.m3)
-  const kmViajeRaw = clampNonNegative(input.kmViaje)
-  const kmViaje = Math.min(kmViajeRaw, CONSTANTS.kmMax)
+  const kmViaje = clampNonNegative(input.kmViaje)
   const precioConIva = clampNonNegative(input.precioConIva)
   const porcentajeComision = CONSTANTS.comisionLucasPorcentaje
   const porcentajeChofer = CONSTANTS.porcentajeChofer
@@ -121,7 +119,7 @@ export const createHistoryEntry = (
   id: string
 ): HistoryEntry => {
   const m3 = clampNonNegative(input.m3)
-  const kmViaje = Math.min(clampNonNegative(input.kmViaje), CONSTANTS.kmMax)
+  const kmViaje = clampNonNegative(input.kmViaje)
 
   return {
     id,

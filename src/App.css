@@ -241,6 +241,11 @@
   border: 1px solid rgba(15, 27, 31, 0.25);
 }
 
+.button--active {
+  box-shadow: 0 0 0 3px rgba(15, 27, 31, 0.2);
+  transform: translateY(-1px);
+}
+
 .rules {
   display: flex;
   flex-direction: column;

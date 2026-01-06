@@ -3,13 +3,7 @@ import './App.css'
 import { CalculatorForm } from './components/CalculatorForm'
 import { ConstantsCard } from './components/ConstantsCard'
 import { ResultsPanel } from './components/ResultsPanel'
-import {
-  calcFuelCost,
-  calcTrip,
-  CONSTANTS,
-  type FuelCostMode,
-  type TripInput,
-} from './helpers/calc'
+import { calcFuelCost, calcTrip, type FuelCostMode, type TripInput } from './helpers/calc'
 import { formatLiters, formatNumber } from './helpers/format'
 
 const defaultForm: TripInput & {
@@ -29,7 +23,7 @@ const defaultForm: TripInput & {
 
 function App() {
   const [form, setForm] = useState(defaultForm)
-  const [kmViajeClamped, setKmViajeClamped] = useState(false)
+  const [selectedExample, setSelectedExample] = useState<number | null>(null)
 
   const tripCalc = useMemo(
     () =>
@@ -71,8 +65,8 @@ function App() {
     value: number | boolean | FuelCostMode
   ) => {
     if (field === 'kmViaje' && typeof value === 'number') {
-      const clamped = Math.min(CONSTANTS.kmMax, Math.max(0, value))
-      setKmViajeClamped(value > CONSTANTS.kmMax)
+      const clamped = Math.max(0, value)
+      setSelectedExample(null)
       setForm((prev) => ({
         ...prev,
         [field]: clamped,
@@ -81,6 +75,9 @@ function App() {
     }
 
     if (typeof value === 'number') {
+      if (field === 'm3' || field === 'precioConIva') {
+        setSelectedExample(null)
+      }
       setForm((prev) => ({
         ...prev,
         [field]: Math.max(0, value),
@@ -95,7 +92,7 @@ function App() {
   }
 
   const handleExample = (kmViaje: number) => {
-    setKmViajeClamped(false)
+    setSelectedExample(kmViaje)
     setForm((prev) => ({
       ...prev,
       m3: 45,
@@ -142,10 +139,18 @@ function App() {
               <p>Dos escenarios listos para cargar en el formulario.</p>
             </header>
             <div className="button-row">
-              <button type="button" className="button" onClick={() => handleExample(3)}>
+              <button
+                type="button"
+                className={`button ${selectedExample === 3 ? 'button--active' : ''}`}
+                onClick={() => handleExample(3)}
+              >
                 Ejemplo 3 km
               </button>
-              <button type="button" className="button button--ghost" onClick={() => handleExample(12)}>
+              <button
+                type="button"
+                className={`button button--ghost ${selectedExample === 12 ? 'button--active' : ''}`}
+                onClick={() => handleExample(12)}
+              >
                 Ejemplo 12 km
               </button>
             </div>
@@ -164,14 +169,14 @@ function App() {
             form={form}
             onChange={handleChange}
             hasNegative={hasNegative}
-            kmViajeClamped={kmViajeClamped}
           />
           <section className="card">
             <header className="card__header">
               <h2>Aclaracion sobre traslados</h2>
               <p>
                 Los traslados entre campos/provincias NO forman parte del valor del viaje. Se
-                reconocen/pagan aparte unicamente cuando ocurre un traslado (acuerdo operativo).
+                reconocen/pagan aparte unicamente cuando ocurre un traslado (acuerdo operativo). La
+                empresa pagara 32 litros de gasoil por cada 100 km de traslados recorridos.
               </p>
             </header>
           </section>

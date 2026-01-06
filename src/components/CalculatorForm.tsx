@@ -12,7 +12,6 @@ type CalculatorFormProps = {
     value: number | boolean | FuelCostMode
   ) => void
   hasNegative: boolean
-  kmViajeClamped: boolean
 }
 
 const clampInput = (value: string) => {
@@ -25,7 +24,6 @@ export function CalculatorForm({
   form,
   onChange,
   hasNegative,
-  kmViajeClamped,
 }: CalculatorFormProps) {
   return (
     <section className="card">
@@ -55,12 +53,10 @@ export function CalculatorForm({
           <input
             type="number"
             min={0}
-            max={15}
             step={0.1}
             value={form.kmViaje}
             onChange={(event) => onChange('kmViaje', clampInput(event.target.value))}
           />
-          {kmViajeClamped ? <small className="warning">Se aplico el limite de 15 km.</small> : null}
         </label>
 
         <label className="field">
