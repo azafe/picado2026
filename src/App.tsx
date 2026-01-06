@@ -52,63 +52,55 @@ function App() {
 
               <div className="example-grid">
                 <article className="example-block">
-                  <h3>Datos</h3>
+                  <h3>Datos del ejemplo</h3>
                   <ul>
-                    <li>m3: {example.m3}</li>
-                    <li>km: {example.kmViaje}</li>
+                    <li>m3 transportados: {example.m3}</li>
+                    <li>km del viaje: {example.kmViaje}</li>
                     <li>gasoil con IVA: {formatCurrency(example.precioConIva)}</li>
+                    <li>IVA: {CONSTANTS.ivaGasoil}%</li>
+                    <li>chofer: {CONSTANTS.porcentajeChofer}%</li>
+                    <li>Lucas: {CONSTANTS.comisionLucasPorcentaje}%</li>
                   </ul>
                 </article>
 
                 <article className="example-block">
-                  <h3>Calculo</h3>
-                  <ul>
+                  <h3>Como se obtiene el total</h3>
+                  <ul className="example-list">
                     <li>
-                      litros_base = {CONSTANTS.factorBase} * {example.m3} ={' '}
-                      {formatNumber(example.litrosBase)}
+                      Base (0–4 km, con IVA): {formatNumber(example.litrosBase)} L ×{' '}
+                      {formatCurrency(example.precioConIva)}, total {formatCurrency(example.base)}.
                     </li>
-                    <li>
-                      $base = {formatNumber(example.litrosBase)} *{' '}
-                      {formatCurrency(example.precioConIva)} = {formatCurrency(example.base)}
-                    </li>
-                    <li>
-                      km_extra ={' '}
-                      {example.kmExtra > 0
-                        ? `${example.kmViaje} - ${CONSTANTS.kmIncluidos} = ${formatNumber(
-                            example.kmExtra
-                          )}`
-                        : '0'}
-                    </li>
-                    <li>
-                      litros_extra ={' '}
-                      {example.kmExtra > 0
-                        ? `${formatNumber(example.kmExtra)} * ${
-                            CONSTANTS.litrosPorKmExtra
-                          } = ${formatNumber(example.litrosExtra)}`
-                        : '0'}
-                    </li>
-                    <li>
-                      precio_sin_iva = {formatCurrency(example.precioSinIva)}
-                    </li>
-                    <li>$extra = {formatCurrency(example.extra)}</li>
+                    {example.kmExtra === 0 ? (
+                      <li>Extra por km excedente (sin IVA): 0 km, total $0,00.</li>
+                    ) : (
+                      <>
+                        <li>Km excedente: {formatNumber(example.kmExtra)} km.</li>
+                        <li>
+                          Extra (sin IVA): {formatNumber(example.litrosExtra)} L ×{' '}
+                          {formatCurrency(example.precioSinIva)}, total{' '}
+                          {formatCurrency(example.extra)}.
+                        </li>
+                      </>
+                    )}
+                    <li>Total del viaje: {formatCurrency(example.totalViaje)}.</li>
                   </ul>
                 </article>
 
                 <article className="example-block example-block--result">
-                  <h3>Resultado final</h3>
-                  <div className="result-big">
+                  <h3>Liquidacion</h3>
+                  <div className="result-row">
                     <span>Total del viaje (bruto)</span>
                     <strong>{formatCurrency(example.totalViaje)}</strong>
                   </div>
-                  <div className="result-split">
-                    <span>{CONSTANTS.porcentajeChofer}% Chofer</span>
+                  <div className="result-row">
+                    <span>Chofer ({CONSTANTS.porcentajeChofer}%)</span>
                     <strong>{formatCurrency(example.pagoChofer)}</strong>
                   </div>
-                  <div className="result-split">
-                    <span>{CONSTANTS.comisionLucasPorcentaje}% Lucas</span>
+                  <div className="result-row">
+                    <span>Lucas ({CONSTANTS.comisionLucasPorcentaje}%)</span>
                     <strong>{formatCurrency(example.comisionLucas)}</strong>
                   </div>
-                  <div className="result-neto">
+                  <div className="result-row result-row--neto">
                     <span>Neto Transporte Zafe</span>
                     <strong>{formatCurrency(example.netoViaje)}</strong>
                   </div>
