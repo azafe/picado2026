@@ -35,6 +35,11 @@
   color: #39454a;
 }
 
+.hero__note {
+  font-weight: 600;
+  color: #1e2b30;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -106,6 +111,12 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.formula-line {
+  margin-top: 12px;
+  font-weight: 600;
+  color: #1e2b30;
+}
+
 .value-highlight {
   background: #0f1b1f;
   color: #f6f1e8;
@@ -138,6 +149,12 @@
 .subcard h3 {
   margin: 0 0 10px;
   font-size: 1rem;
+}
+
+.example-note {
+  margin-top: 12px;
+  color: #4c5a60;
+  font-weight: 600;
 }
 
 .note-strong {
@@ -405,6 +422,19 @@
   border-bottom: none;
   margin-top: 6px;
   font-size: 1.05rem;
+}
+
+.daily-block {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #f7f6f2;
+  border: 1px solid rgba(15, 27, 31, 0.08);
+}
+
+.daily-block h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
 }
 
 
