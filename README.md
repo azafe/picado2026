@@ -1,6 +1,6 @@
-# Picado 2025/2026 - Calculadora de Viajes
+# Picado 2025/2026 - Landing Explicativa
 
-Landing page con calculadora para estimar valores brutos, netos y balance diario de gasoil.
+Landing page explicativa con ejemplos fijos para entender cómo se paga cada viaje.
 
 ## Scripts
 

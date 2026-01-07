@@ -4,67 +4,10 @@ export const CONSTANTS = {
   litrosPorKmExtra: 4.5,
   kmMaximo: 15,
   ivaGasoil: 21,
-  comisionLucasPorcentaje: 4,
   porcentajeChofer: 15,
+  porcentajeGasoil: 11,
+  comisionLucasPorcentaje: 4,
 } as const
-
-export type TripInput = {
-  m3: number
-  kmViaje: number
-  precioConIva: number
-}
-
-export type TripCalculation = {
-  kmExtra: number
-  precioSinIva: number
-  litrosBase: number
-  litrosExtra: number
-  litrosReconocidos: number
-  base: number
-  extra: number
-  totalViaje: number
-  comisionLucas: number
-  pagoChofer: number
-  netoViaje: number
-}
-
-export type HistoryEntry = {
-  id: string
-  timestamp: string
-  m3: number
-  kmViaje: number
-  totalViaje: number
-  netoViaje: number
-  litrosExtra: number
-}
-
-export type DayTotals = {
-  brutoDia: number
-  netoDia: number
-  litrosComprometidos: number
-  litrosDisponibles: number
-  gasoilDisponibleValor: number
-  netoPlus: number
-  porcentajeGanancia: number
-  porcentajeGananciaPlus: number
-}
-
-export type FuelCostMode = 'porcentaje' | 'litros'
-
-export type FuelCostInput = {
-  modo: FuelCostMode
-  consumoPorcentaje: number
-  litrosConsumidosViaje: number
-  precioConIva: number
-}
-
-export type FuelCostCalculation = {
-  litrosReconocidos: number
-  litrosConsumidos: number
-  costoCombustible: number
-  netoReal: number
-  margenReal: number
-}
 
 export type ExampleCalculation = {
   title: string
@@ -79,13 +22,14 @@ export type ExampleCalculation = {
   extra: number
   totalViaje: number
   pagoChofer: number
+  pagoGasoil: number
   comisionLucas: number
   netoViaje: number
 }
 
 const clampNonNegative = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0)
 
-export const calcPrecioSinIva = (precioConIva: number, iva: number) => {
+const calcPrecioSinIva = (precioConIva: number, iva: number) => {
   const safePrecio = clampNonNegative(precioConIva)
   const safeIva = clampNonNegative(iva)
   const divisor = 1 + safeIva / 100
@@ -93,187 +37,50 @@ export const calcPrecioSinIva = (precioConIva: number, iva: number) => {
   return safePrecio / divisor
 }
 
-export const calcTrip = (input: TripInput): TripCalculation => {
-  const m3 = clampNonNegative(input.m3)
-  const kmViaje = clampNonNegative(input.kmViaje)
-  const precioConIva = clampNonNegative(input.precioConIva)
-  const porcentajeComision = CONSTANTS.comisionLucasPorcentaje
-  const porcentajeChofer = CONSTANTS.porcentajeChofer
-
-  const precioSinIva = calcPrecioSinIva(precioConIva, CONSTANTS.ivaGasoil)
+const calcExample = (kmViaje: number) => {
+  const m3 = 45
+  const precioConIva = 1415
+  const safeKm = clampNonNegative(kmViaje)
 
   const litrosBase = CONSTANTS.factorBase * m3
   const base = litrosBase * precioConIva
 
-  const kmExtra = Math.max(0, kmViaje - CONSTANTS.kmIncluidos)
+  const kmExtra = Math.max(0, safeKm - CONSTANTS.kmIncluidos)
   const litrosExtra = kmExtra * CONSTANTS.litrosPorKmExtra
+  const precioSinIva = calcPrecioSinIva(precioConIva, CONSTANTS.ivaGasoil)
   const extra = litrosExtra * precioSinIva
-  const litrosReconocidos = litrosBase + litrosExtra
 
   const totalViaje = base + extra
-  const comisionLucas = totalViaje * (porcentajeComision / 100)
-  const pagoChofer = totalViaje * (porcentajeChofer / 100)
-  const netoViaje = totalViaje - comisionLucas - pagoChofer
+  const pagoChofer = totalViaje * (CONSTANTS.porcentajeChofer / 100)
+  const pagoGasoil = totalViaje * (CONSTANTS.porcentajeGasoil / 100)
+  const comisionLucas = totalViaje * (CONSTANTS.comisionLucasPorcentaje / 100)
+  const netoViaje = totalViaje - pagoChofer - pagoGasoil - comisionLucas
 
   return {
-    kmExtra,
-    precioSinIva,
+    m3,
+    kmViaje: safeKm,
+    precioConIva,
     litrosBase,
-    litrosExtra,
-    litrosReconocidos,
     base,
+    kmExtra,
+    litrosExtra,
+    precioSinIva,
     extra,
     totalViaje,
-    comisionLucas,
     pagoChofer,
+    pagoGasoil,
+    comisionLucas,
     netoViaje,
   }
 }
 
-const EXAMPLE_BASE = {
-  m3: 45,
-  precioConIva: 1415,
-} as const
-
-export const getExampleCalculations = (): ExampleCalculation[] => {
-  const examples = [
-    { title: 'Ejemplo 1 — Viaje de 3 km (<= 4 km)', kmViaje: 3 },
-    { title: 'Ejemplo 2 — Viaje de 12 km (> 4 km)', kmViaje: 12 },
-  ] as const
-
-  return examples.map((example) => {
-    const calc = calcTrip({
-      m3: EXAMPLE_BASE.m3,
-      kmViaje: example.kmViaje,
-      precioConIva: EXAMPLE_BASE.precioConIva,
-    })
-
-    return {
-      title: example.title,
-      m3: EXAMPLE_BASE.m3,
-      kmViaje: example.kmViaje,
-      precioConIva: EXAMPLE_BASE.precioConIva,
-      litrosBase: calc.litrosBase,
-      base: calc.base,
-      kmExtra: calc.kmExtra,
-      litrosExtra: calc.litrosExtra,
-      precioSinIva: calc.precioSinIva,
-      extra: calc.extra,
-      totalViaje: calc.totalViaje,
-      pagoChofer: calc.pagoChofer,
-      comisionLucas: calc.comisionLucas,
-      netoViaje: calc.netoViaje,
-    }
-  })
-}
-
-export const createHistoryEntry = (
-  input: TripInput,
-  calc: TripCalculation,
-  timestamp: string,
-  id: string
-): HistoryEntry => {
-  const m3 = clampNonNegative(input.m3)
-  const kmViaje = clampNonNegative(input.kmViaje)
-
-  return {
-    id,
-    timestamp,
-    m3,
-    kmViaje,
-    totalViaje: calc.totalViaje,
-    netoViaje: calc.netoViaje,
-    litrosExtra: calc.litrosExtra,
-  }
-}
-
-export const calcDayTotalsFromHistory = (
-  history: HistoryEntry[],
-  litrosRecibidos: number,
-  precioConIva: number
-): DayTotals => {
-  const brutoDia = history.reduce((acc, entry) => acc + entry.totalViaje, 0)
-  const netoDia = history.reduce((acc, entry) => acc + entry.netoViaje, 0)
-  const litrosComprometidos = history.reduce((acc, entry) => acc + entry.litrosExtra, 0)
-
-  return buildDayTotals(
-    brutoDia,
-    netoDia,
-    litrosComprometidos,
-    litrosRecibidos,
-    precioConIva
-  )
-}
-
-export const calcDayTotalsFromMultiplier = (
-  tripCalc: TripCalculation,
-  viajesDia: number,
-  litrosRecibidos: number,
-  precioConIva: number
-): DayTotals => {
-  const safeViajes = clampNonNegative(viajesDia)
-  const brutoDia = tripCalc.totalViaje * safeViajes
-  const netoDia = tripCalc.netoViaje * safeViajes
-  const litrosComprometidos = tripCalc.litrosExtra * safeViajes
-
-  return buildDayTotals(
-    brutoDia,
-    netoDia,
-    litrosComprometidos,
-    litrosRecibidos,
-    precioConIva
-  )
-}
-
-const buildDayTotals = (
-  brutoDia: number,
-  netoDia: number,
-  litrosComprometidos: number,
-  litrosRecibidos: number,
-  precioConIva: number
-): DayTotals => {
-  const safeRecibidos = clampNonNegative(litrosRecibidos)
-  const safePrecio = clampNonNegative(precioConIva)
-  const litrosDisponibles = safeRecibidos - litrosComprometidos
-  const gasoilDisponibleValor = litrosDisponibles * safePrecio
-  const netoPlus = netoDia + gasoilDisponibleValor
-  const porcentajeGanancia = brutoDia > 0 ? netoDia / brutoDia : 0
-  const porcentajeGananciaPlus = brutoDia > 0 ? netoPlus / brutoDia : 0
-
-  return {
-    brutoDia,
-    netoDia,
-    litrosComprometidos,
-    litrosDisponibles,
-    gasoilDisponibleValor,
-    netoPlus,
-    porcentajeGanancia,
-    porcentajeGananciaPlus,
-  }
-}
-
-export const calcFuelCost = (
-  tripCalc: TripCalculation,
-  input: FuelCostInput
-): FuelCostCalculation => {
-  const litrosReconocidos = tripCalc.litrosReconocidos
-  const consumoPorcentaje = clampNonNegative(input.consumoPorcentaje)
-  const litrosConsumidosViaje = clampNonNegative(input.litrosConsumidosViaje)
-  const precioConIva = clampNonNegative(input.precioConIva)
-
-  const litrosConsumidos =
-    input.modo === 'porcentaje'
-      ? litrosReconocidos * (consumoPorcentaje / 100)
-      : litrosConsumidosViaje
-  const costoCombustible = litrosConsumidos * precioConIva
-  const netoReal = tripCalc.netoViaje - costoCombustible
-  const margenReal = tripCalc.totalViaje > 0 ? netoReal / tripCalc.totalViaje : 0
-
-  return {
-    litrosReconocidos,
-    litrosConsumidos,
-    costoCombustible,
-    netoReal,
-    margenReal,
-  }
-}
+export const getExampleCalculations = (): ExampleCalculation[] => [
+  {
+    title: 'Ejemplo 1 – Viaje de 3 km (hasta 4 km)',
+    ...calcExample(3),
+  },
+  {
+    title: 'Ejemplo 2 – Viaje de 12 km (más de 4 km)',
+    ...calcExample(12),
+  },
+]
